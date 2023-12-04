@@ -84,32 +84,7 @@ class AdvCodeDay3 {
 
         return sum;
     }
-    fun sumRowStars(row: List<FoundNumber>, rowBefore: List<FoundNumber>, before: List<Int>, same: List<Int>): Int{
-        var index =0;
-        var sum = 0
-
-        row.forEach{
-            var num = it
-            before.forEach {
-                if(it in num.startIndex-1..num.endIndex+1){
-                    var ix = it
-                    rowBefore.forEach{
-                        if(ix in it.startIndex-1..it.endIndex+1) {
-                            sum += num.sum.times(it.sum)
-                        }
-                    }
-                }
-            }
-            same.forEach{
-                if(it == num.startIndex - 1 && index > 0 && row.get(index-1).endIndex +1 == it){
-                    sum+= num.sum.times(row.get(index-1).sum)
-                }
-            }
-            index++
-        }
-
-        return sum;
-    }
+    
     fun sumRowGears(current: List<Int>, beforeNum: List<FoundNumber>, currentNums: List<FoundNumber>, afterNum: List<FoundNumber>): Int{
         var index =0;
         var sum = 0
