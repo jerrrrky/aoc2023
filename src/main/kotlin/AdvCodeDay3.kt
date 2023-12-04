@@ -1,14 +1,7 @@
 import java.io.File
 
 class AdvCodeDay3 {
-    fun isSpecial(s: String):Boolean{
-        var result = s.filter { !it.isLetterOrDigit()}
-        println(result)
-        if(result.isEmpty() or s.equals(".")){
-            return false
-        }
-        return true;
-    }
+
     fun findAllNumbersInRow(row: String): List<FoundNumber>{
         var nums: List<FoundNumber> = emptyList<FoundNumber>()
         var foundNumber = "";
@@ -40,7 +33,58 @@ class AdvCodeDay3 {
         }
         return indexes
     }
+    fun findAllStarsInRow(row: String): List<Int>{
+        var indexes: List<Int> = emptyList<Int>()
+        for(i in 0..row.length-1){
+            if(row[i].equals("*")){
+                indexes += i
+            }
+
+        }
+        return indexes
+    }
     fun sumRow(row: List<FoundNumber>, before: List<Int>, same: List<Int>, after: List<Int>): Int{
+
+        var sum = 0
+        row.forEach{
+            var found = false
+            var num = it
+            before.forEach {
+                if(it in num.startIndex-1..num.endIndex+1){
+                    if(!found){
+                        sum+=num.sum
+                    }
+                    found= true;
+                    return@forEach
+                }
+            }
+            if(!found){
+                same.forEach {
+                    if(it in num.startIndex-1..num.endIndex+1){
+                        if(!found){
+                            sum+=num.sum
+                        }
+                        found= true;
+                        return@forEach
+                    }
+                }
+            }
+            if(!found){
+                after.forEach {
+                    if(it in num.startIndex-1..num.endIndex+1){
+                        if(!found){
+                            sum+=num.sum
+                        }
+                        found= true;
+                        return@forEach
+                    }
+                }
+            }
+        }
+
+        return sum;
+    }
+    fun sumRowStars(row: List<FoundNumber>, before: List<Int>, same: List<Int>, after: List<Int>): Int{
 
         var sum = 0
         row.forEach{
