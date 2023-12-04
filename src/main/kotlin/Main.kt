@@ -1,4 +1,4 @@
 fun main(args: Array<String>) {
-    val u2 = AdvCodeDay2()
-    u2.del2()
+    val u3 = AdvCodeDay3()
+    u3.del1()
 }
