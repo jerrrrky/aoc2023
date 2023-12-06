@@ -84,7 +84,7 @@ class AdvCodeDay3 {
 
         return sum;
     }
-    
+
     fun sumRowGears(current: List<Int>, beforeNum: List<FoundNumber>, currentNums: List<FoundNumber>, afterNum: List<FoundNumber>): Int{
         var index =0;
         var sum = 0

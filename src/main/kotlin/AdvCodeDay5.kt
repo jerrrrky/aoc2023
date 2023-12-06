@@ -1,5 +1,4 @@
 
-
 class AdvCodeDay5 {
     var utils = Utils()
 
@@ -8,7 +7,7 @@ class AdvCodeDay5 {
         var firstLine=true
         var productMap= ProductMap()
         var productList= ProductMapList()
-        var locations = emptyList<Long>()
+        var locations = emptyList<LongRange>()
         utils.getFile("dec5.txt").forEachLine {
             if(firstLine) {
                 seeds.addSeeds(it.split(":").last())
@@ -30,12 +29,16 @@ class AdvCodeDay5 {
         }
         productList.productMapList += productMap
         seeds.startList.forEachIndexed {index: Int, l: Long ->
-            (l..l+seeds.rangeList.get(index)).forEach{
-                locations+=getMappingBySeed(it,productList)
-            }
+            locations+=getMappingBySeedRange(LongRange(l,l+seeds.rangeList.get(index)-1),productList)
+
+            println("seed" + index )
         }
-        
-        println(locations.minOrNull())
+        var min= emptyList<Long>()
+        locations.forEach{
+            min+=it
+        }
+        println(min.minOrNull())
+
     }
 
     class Seeds {
@@ -97,6 +100,33 @@ class AdvCodeDay5 {
             }
 
         }
+        fun getMappingByRange(source: LongRange): List<LongRange> {
+            var ranges = emptyList<LongRange>().toMutableList()
+            var nums = emptyList<Long>()
+            mappings.forEach{
+                var t = source.intersect(LongRange(it.source, it.source + it.range))
+                var m = source - t
+                nums += m.toList()
+                if(!t.isEmpty()){
+                    var l =LongRange(it.dest-it.source+t.first(),it.dest-it.source+t.last())
+                    ranges.add(l)
+                    //if(!m.isEmpty() && !m.size.equals(source.last-source.first)){
+                    //    var test = 0
+                    //    var q =LongRange(it.dest-it.source+m.first(),it.dest-it.source+m.last())
+                    //    ranges.add(q)
+                    //}
+                    ranges.toList()
+                }
+            }
+            nums.forEach{
+                var f =getMappingBySource(it)
+                ranges.add(LongRange(f,f))
+            }
+            if(ranges.isEmpty()) ranges.add(source)
+            return ranges
+
+
+        }
     }
     class ProductMapList{
         var productMapList = emptyList<ProductMap>()
@@ -121,6 +151,25 @@ class AdvCodeDay5 {
        
        // println(currentSource)
         return currentSource
+    }
+    fun getMappingBySeedRange(seed: LongRange, productMapList: ProductMapList): List<LongRange>{
+        var name="seed"
+        var currentSource = seed;
+        var foundMapping = 0
+        var ranges = productMapList.getBySource(name).getMappingByRange(currentSource)
+        while(name!="location"){
+            var productMap= productMapList.getBySource(name)
+            var t = emptyList<LongRange>()
+            if(name != "seed"){
+                ranges.forEach{t+=productMap.getMappingByRange(it)}
+                ranges = t
+            }
+
+            name=productMap.destName
+        }
+
+        // println(currentSource)
+        return ranges
     }
 
 
