@@ -30,6 +30,7 @@ class AdvCodeDay5 {
         productList.productMapList += productMap
         seeds.range.forEach{
             locations+=getMappingBySeedRange(it,productList)
+            println(it.first)
         }
 
         var min= emptyList<Long>()
