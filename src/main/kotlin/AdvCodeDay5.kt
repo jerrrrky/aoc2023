@@ -1,3 +1,4 @@
+import kotlin.concurrent.fixedRateTimer
 
 class AdvCodeDay5 {
     var utils = Utils()
@@ -8,6 +9,7 @@ class AdvCodeDay5 {
         var productMap= ProductMap()
         var productList= ProductMapList()
         var locations = emptyList<LongRange>()
+        //var locations = emptyList<Long>()
         utils.getFile("dec5.txt").forEachLine {
             if(firstLine) {
                 seeds.addSeeds(it.split(":").last())
@@ -30,12 +32,17 @@ class AdvCodeDay5 {
         productList.productMapList += productMap
         seeds.range.forEach{
             locations+=getMappingBySeedRange(it,productList)
-            println(it.first)
+            println("Location done: " + it.first)
+            println(locations.size)
         }
 
         var min= emptyList<Long>()
+
+        var num = locations.get(0).first
+        locations = locations.filter { it.first<=num }
+        println("done with all")
         locations.forEach{
-            min+=it
+            min+=it.first
         }
         println(min.minOrNull())
 
@@ -95,11 +102,12 @@ class AdvCodeDay5 {
             destRanges.add(LongRange(dest, range+dest))
         }
 
-        fun getMappingByRange(source: LongRange): List<LongRange> {
+        fun getMappingByRange(source: LongRange, seedName: String): List<LongRange> {
             var ranges = emptyList<LongRange>().toMutableList()
             var nums = emptyList<Long>()
             var tempRanges = emptyList<LongRange>().toMutableList()
             var sourceFound = false
+
             sourceRanges.forEachIndexed(){index, sourcerange ->
                 var start = source.first - sourcerange.first+destRanges.get(index).first
                 var end = source.last - sourcerange.first+destRanges.get(index).first
@@ -123,9 +131,12 @@ class AdvCodeDay5 {
                 } else {
                     //
                 }
-                tempRanges.forEach{
-                    ranges+=getMappingByRange(it)
-                }
+                //tempRanges.forEach{
+                //    ranges+=getMappingByRange(it, seedName)
+                //}
+            }
+            tempRanges.forEach{
+                ranges+=getMappingByRange(it, seedName)
             }
             if(!sourceFound) {ranges.add(source)}
 
@@ -144,20 +155,28 @@ class AdvCodeDay5 {
     fun getMappingBySeedRange(seed: LongRange, productMapList: ProductMapList): List<LongRange>{
         var name="seed"
         var currentSource = seed;
-        var ranges = productMapList.getBySource(name).getMappingByRange(currentSource)
+        var ranges = productMapList.getBySource(name).getMappingByRange(currentSource, name)
         while(name!="location"){
             var productMap= productMapList.getBySource(name)
             var t = emptyList<LongRange>()
             if(name != "seed"){
-                ranges.forEach{t+=productMap.getMappingByRange(it)}
+                println("Working with seed " + productMap.destName)
+                ranges.stream().forEach{t+=productMap.getMappingByRange(it,productMap.destName) }
+                //var r = emptyList<LongRange>().toMutableList()
+                //t.forEach{r.add(LongRange(it.first,it.first))}
                 ranges = t
             }
-
+            println("Ranges size " + ranges.size)
             name=productMap.destName
         }
 
         // println(currentSource)
-        return ranges
+        //var no = if(!ranges.isEmpty()) {ranges.get(0).first} else 0
+        var min= ranges.get(0).first
+        return ranges.filter { it.first <= min }
+
+        //return ranges
+        //return ranges
     }
 
 
