@@ -28,11 +28,10 @@ class AdvCodeDay5 {
 
         }
         productList.productMapList += productMap
-        seeds.startList.forEachIndexed {index: Int, l: Long ->
-            locations+=getMappingBySeedRange(LongRange(l,l+seeds.rangeList.get(index)-1),productList)
-
-            println("seed" + index )
+        seeds.range.forEach{
+            locations+=getMappingBySeedRange(it,productList)
         }
+
         var min= emptyList<Long>()
         locations.forEach{
             min+=it
@@ -63,15 +62,14 @@ class AdvCodeDay5 {
         }
     }
     class SeedsThree {
-        var startList= emptyList<Long>()
-        var rangeList= emptyList<Long>()
+        var range = emptyList<LongRange>().toMutableList()
         fun addSeeds(seedsString: String){
             var seedsLong = seedsString.split(" ").filter { !it.isEmpty() }.map { it.toLong() }
             var i = 1
             while(i<=seedsLong.size){
                 if(i%2==0){
-                    startList+=seedsLong.get(i-2)
-                    rangeList+=seedsLong.get(i-1)
+                    range.add(LongRange(seedsLong.get(i-2),seedsLong.get(i-1)+seedsLong.get(i-2)-1))
+
                 }
                 i++
             }
@@ -80,49 +78,56 @@ class AdvCodeDay5 {
     class ProductMap {
         var sourceName: String = ""
         var destName: String = ""
-        var mappings: List<Mappings> = emptyList()
+        var sourceRanges = emptyList<LongRange>().toMutableList()
+        var destRanges= emptyList<LongRange>().toMutableList()
         fun addNames(nameRow: String){
             sourceName= nameRow.split("-").first()
             destName= nameRow.split("-").last()
         }
         fun addMappings(mapString: String){
+
             var source = mapString.split(" ").get(1).toLong()
             var dest = mapString.split(" ").first().toLong()
             var range = mapString.split(" ").last().toLong()
-            mappings+=Mappings(source,dest,range)
-        }
-        fun getMappingBySource(source: Long): Long{
-            var filtermap = mappings.filter { source in it.source..it.source+it.range }
-            if(filtermap.size == 0){
-                return source
-            }else{
-                 return source-filtermap.first().source+filtermap.first().dest
-            }
 
+            sourceRanges.add(LongRange(source, range+source))
+            destRanges.add(LongRange(dest, range+dest))
         }
+
         fun getMappingByRange(source: LongRange): List<LongRange> {
             var ranges = emptyList<LongRange>().toMutableList()
             var nums = emptyList<Long>()
-            mappings.forEach{
-                var t = source.intersect(LongRange(it.source, it.source + it.range))
-                var m = source - t
-                nums += m.toList()
-                if(!t.isEmpty()){
-                    var l =LongRange(it.dest-it.source+t.first(),it.dest-it.source+t.last())
-                    ranges.add(l)
-                    //if(!m.isEmpty() && !m.size.equals(source.last-source.first)){
-                    //    var test = 0
-                    //    var q =LongRange(it.dest-it.source+m.first(),it.dest-it.source+m.last())
-                    //    ranges.add(q)
-                    //}
-                    ranges.toList()
+            var tempRanges = emptyList<LongRange>().toMutableList()
+            var sourceFound = false
+            sourceRanges.forEachIndexed(){index, sourcerange ->
+                var start = source.first - sourcerange.first+destRanges.get(index).first
+                var end = source.last - sourcerange.first+destRanges.get(index).first
+
+                if(source.first >= sourcerange.first && source.last <= sourcerange.last  ){
+                    ranges.add(LongRange(start,end))
+                    sourceFound = true
+                }else if(source.first < sourcerange.first && source.last <= sourcerange.last && source.last > sourcerange.first ){
+                    ranges.add(LongRange(destRanges.get(index).first, end))
+                    tempRanges.add(LongRange(source.first,sourcerange.first-1))
+                    sourceFound = true
+                }else if(source.first >= sourcerange.first && source.first < sourcerange.last && source.last > sourcerange.last ){
+                    ranges.add(LongRange(start, destRanges.get(index).last))
+                    tempRanges.add(LongRange(sourcerange.last+1,source.last))
+                    sourceFound = true
+                }else if(source.first < sourcerange.first && source.last > sourcerange.last ){
+                    ranges.add(LongRange(destRanges.get(index).first, destRanges.get(index).last))
+                    tempRanges.add(LongRange(source.first,sourcerange.first-1))
+                    tempRanges.add(LongRange(sourcerange.last+1,source.last))
+                    sourceFound = true
+                } else {
+                    //
+                }
+                tempRanges.forEach{
+                    ranges+=getMappingByRange(it)
                 }
             }
-            nums.forEach{
-                var f =getMappingBySource(it)
-                ranges.add(LongRange(f,f))
-            }
-            if(ranges.isEmpty()) ranges.add(source)
+            if(!sourceFound) {ranges.add(source)}
+
             return ranges
 
 
@@ -134,28 +139,10 @@ class AdvCodeDay5 {
             return productMapList.filter { it.sourceName==source }.first()
         }
     }
-    class Mappings(
-        val source: Long,
-        val dest: Long,
-        val range: Long
-    )
-    fun getMappingBySeed(seed: Long, productMapList: ProductMapList): Long{
-        var name="seed"
-        var currentSource = seed;
-        var foundMapping = 0
-        while(name!="location"){
-            var productMap= productMapList.getBySource(name)
-            name=productMap.destName
-            currentSource = productMap.getMappingBySource(currentSource)
-        }
-       
-       // println(currentSource)
-        return currentSource
-    }
+
     fun getMappingBySeedRange(seed: LongRange, productMapList: ProductMapList): List<LongRange>{
         var name="seed"
         var currentSource = seed;
-        var foundMapping = 0
         var ranges = productMapList.getBySource(name).getMappingByRange(currentSource)
         while(name!="location"){
             var productMap= productMapList.getBySource(name)
