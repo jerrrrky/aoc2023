@@ -1,0 +1,10 @@
+LR
+
+QQA = (QQB, XXX)
+QQB = (XXX, QQZ)
+QQZ = (QQB, XXX)
+HHA = (HHB, XXX)
+HHB = (HHC, HHC)
+HHC = (HHZ, HHZ)
+HHZ = (HHB, HHB)
+XXX = (XXX, XXX)
